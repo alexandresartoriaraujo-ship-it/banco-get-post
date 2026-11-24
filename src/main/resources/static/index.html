@@ -1,0 +1,335 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Digital</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f1f4f9;
+            color: #222;
+        }
+
+        header {
+            background-color: #142d4e;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin-bottom: 8px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .formulario {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px #00000015;
+        }
+
+        h2 {
+            color: #142d4e;
+            margin-bottom: 20px;
+        }
+
+        .campos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #d6a43b;
+            color: #142d4e;
+            border: none;
+            padding: 13px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #bd8d28;
+        }
+
+        #mensagem {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .clientes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .cliente {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #00000015;
+        }
+
+        .cliente img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .cliente h3 {
+            color: #142d4e;
+            margin-bottom: 10px;
+        }
+
+        .cliente p {
+            margin: 7px 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .campos {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Banco Digital</h1>
+    <p>Gerenciamento de clientes</p>
+</header>
+
+<main>
+
+    <section class="formulario">
+
+        <h2>Cadastrar Cliente</h2>
+
+        <form id="formulario">
+
+            <div class="campos">
+
+                <input type="text" id="nome" placeholder="Nome completo" required>
+
+                <input type="text" id="cpf" placeholder="CPF" required>
+
+                <input type="email" id="email" placeholder="E-mail" required>
+
+                <input type="text" id="telefone" placeholder="Telefone" required>
+
+                <input type="text" id="endereco" placeholder="Endereço" required>
+
+                <input type="text" id="cidade" placeholder="Cidade" required>
+
+                <select id="tipoDeConta" required>
+                    <option value="">Tipo de conta</option>
+                    <option value="Corrente">Corrente</option>
+                    <option value="Poupança">Poupança</option>
+                    <option value="Salário">Salário</option>
+                </select>
+
+                <input type="number" id="idade" placeholder="Idade" required>
+
+                <select id="genero" required>
+                    <option value="">Selecione o gênero</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+
+                <input type="url" id="foto" placeholder="URL da foto">
+
+            </div>
+
+            <button type="submit">Cadastrar Cliente</button>
+
+            <p id="mensagem"></p>
+
+        </form>
+
+    </section>
+
+    <section>
+        <h2>Clientes Cadastrados</h2>
+
+        <div class="clientes" id="listaClientes">
+            <p>Carregando clientes...</p>
+        </div>
+    </section>
+
+</main>
+
+<script>
+
+    const API_URL = "http://localhost:8080/api/banco";
+
+    const formulario = document.getElementById("formulario");
+    const listaClientes = document.getElementById("listaClientes");
+    const mensagem = document.getElementById("mensagem");
+
+    // Listar clientes
+    async function listarClientes() {
+
+        try {
+
+            const resposta = await fetch(API_URL);
+
+            if (!resposta.ok) {
+                throw new Error("Erro ao buscar clientes.");
+            }
+
+            const clientes = await resposta.json();
+
+            listaClientes.innerHTML = "";
+
+            if (clientes.length === 0) {
+                listaClientes.innerHTML = "<p>Nenhum cliente cadastrado.</p>";
+                return;
+            }
+
+            clientes.forEach(cliente => {
+
+                const card = document.createElement("div");
+                card.className = "cliente";
+
+                const imagem = document.createElement("img");
+                imagem.src = cliente.foto || "https://placehold.co/90x90?text=Cliente";
+                imagem.alt = "Foto do cliente";
+
+                imagem.onerror = function() {
+                    this.src = "https://placehold.co/90x90?text=Cliente";
+                };
+
+                const titulo = document.createElement("h3");
+                titulo.textContent = cliente.nome;
+
+                const dados = document.createElement("div");
+
+                dados.innerHTML = `
+                    <p><strong>ID:</strong> ${cliente.id}</p>
+                    <p><strong>CPF:</strong> ${cliente.cpf}</p>
+                    <p><strong>E-mail:</strong> ${cliente.email}</p>
+                    <p><strong>Telefone:</strong> ${cliente.telefone}</p>
+                    <p><strong>Endereço:</strong> ${cliente.endereco}</p>
+                    <p><strong>Cidade:</strong> ${cliente.cidade}</p>
+                    <p><strong>Conta:</strong> ${cliente.tipoDeConta}</p>
+                    <p><strong>Idade:</strong> ${cliente.idade}</p>
+                    <p><strong>Gênero:</strong> ${cliente.genero}</p>
+                `;
+
+                card.appendChild(imagem);
+                card.appendChild(titulo);
+                card.appendChild(dados);
+
+                listaClientes.appendChild(card);
+
+            });
+
+        } catch (erro) {
+
+            listaClientes.innerHTML = "<p>Não foi possível carregar os clientes. Verifique a API.</p>";
+
+            console.error(erro);
+
+        }
+
+    }
+
+    // Cadastrar cliente
+    formulario.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const cliente = {
+
+            nome: document.getElementById("nome").value,
+            cpf: document.getElementById("cpf").value,
+            email: document.getElementById("email").value,
+            telefone: document.getElementById("telefone").value,
+            endereco: document.getElementById("endereco").value,
+            cidade: document.getElementById("cidade").value,
+            tipoDeConta: document.getElementById("tipoDeConta").value,
+            idade: Number(document.getElementById("idade").value),
+            genero: document.getElementById("genero").value,
+            foto: document.getElementById("foto").value
+
+        };
+
+        try {
+
+            const resposta = await fetch(API_URL, {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(cliente)
+
+            });
+
+            if (!resposta.ok) {
+
+                const erro = await resposta.text();
+
+                throw new Error(erro || "Erro ao cadastrar cliente.");
+
+            }
+
+            mensagem.style.color = "green";
+            mensagem.textContent = "Cliente cadastrado com sucesso!";
+
+            formulario.reset();
+
+            listarClientes();
+
+        } catch (erro) {
+
+            mensagem.style.color = "red";
+            mensagem.textContent = "Não foi possível salvar o cliente. Verifique a API.";
+
+            console.error("Erro no cadastro:", erro);
+
+        }
+
+    });
+
+    // Carregar clientes ao abrir a página
+    listarClientes();
+
+</script>
+
+</body>
+</html>
+```
